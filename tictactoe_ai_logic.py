@@ -1,15 +1,6 @@
 import copy
 import random
 
-# Initialize board
-board = [[" " for _ in range(3)] for _ in range(3)]
-
-def print_board(board): # Prints the board in the console for testing
-    for i, row in enumerate(board):
-        print(" | ".join(row))
-        if i < len(board) - 1:
-            print("-" * 10)
-
 def is_winner(board, player): # Check rows, columns, and diagonals for a winner
     return any(
         all(cell == player for cell in row) for row in board
@@ -18,12 +9,7 @@ def is_winner(board, player): # Check rows, columns, and diagonals for a winner
     ) or all(board[i][i] == player for i in range(3)) or all(board[i][2 - i] == player for i in range(3))
 
 def is_board_full(board): # Checks if the board is full
-    for i in range(3):
-        for j in range(3):
-            if board[i][j] == " ":
-                return False
-    
-    return True
+    return all(cell != " " for row in board for cell in row)
 
 def evaluate_board(board): # Evaluates the board based on our heuristics
     score = 0
@@ -65,7 +51,7 @@ def minimax(board, depth, is_maximizing_player):
         return evaluate_board(board), None
 
     best_move = None
-    best_moves = [None]
+    best_moves = []
 
     if is_maximizing_player: # Calculating the computer's move
         val = float('-inf')
@@ -100,14 +86,13 @@ def minimax(board, depth, is_maximizing_player):
                         best_move = (i, j)
 
         return val, best_move
-
-
+    
 def minimax_alpha_beta(board, depth, alpha, beta, is_maximizing_player):
     if (depth == 0) or is_winner(board, "X") or is_winner(board, "O") or is_board_full(board):
         return evaluate_board(board), None
 
     best_move = None
-    best_moves = [None]
+    best_moves = []
 
     if is_maximizing_player: # Calculating the computer's move
         val = float('-inf')
@@ -126,7 +111,7 @@ def minimax_alpha_beta(board, depth, alpha, beta, is_maximizing_player):
 
                     alpha = max(alpha, val)
                     if val >= beta:
-                        break
+                        return val, random.choice(best_moves)
         
         best_move = random.choice(best_moves)
 
@@ -147,37 +132,6 @@ def minimax_alpha_beta(board, depth, alpha, beta, is_maximizing_player):
                     
                     beta = min(beta, val)
                     if val <= alpha:
-                        break
+                        return val, best_move
 
         return val, best_move
-
-# Game loop (for testing)
-player_turn = True
-while True:    
-    if player_turn:  # For the player's move
-        print_board(board)
-        row, col = map(int, input("Enter your move (row col): ").split())
-        if board[row][col] == " ": 
-            board[row][col] = "X"
-    else:  # For the computer's move
-        # Call minimax to get best move
-        _,row_col = minimax_alpha_beta(board, depth=9, alpha=float('-inf'), beta=float('inf'), is_maximizing_player=True)
-        #_, row_col = minimax(board, depth=9, is_maximizing_player=True)
-        row, col = row_col
-        if board[row][col] == " ": 
-            board[row][col] = "O"
-
-    # Check for winner
-    if is_winner(board, "X"):
-        print("Player wins!")
-        break
-    elif is_winner(board, "O"):
-        print("Computer wins!")
-        break
-    elif is_board_full(board):
-        print_board(board)
-        print("Draw")
-        break
-    
-    # Switch turn
-    player_turn = not player_turn
