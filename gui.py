@@ -10,9 +10,12 @@ class TicTacToeGUI:
         
         self.selected_algorithm = tkinter.StringVar(value="Minimax")
         self.difficulty = tkinter.IntVar(value=1)
+        self.is_attack = tkinter.BooleanVar(value=True)
 
         self.main_menu_frame = ttk.Frame(self.root)
         self.board_frame = ttk.Frame(self.root)
+
+        self.ai_first = False
 
         self.create_main_menu()
 
@@ -26,6 +29,8 @@ class TicTacToeGUI:
 
         ttk.Label(self.main_menu_frame, text="Select Difficulty (Depth 1-9):").pack()
         ttk.Combobox(self.main_menu_frame, textvariable=self.difficulty, values=[i for i in range(1, 10)], state="readonly").pack()
+
+        ttk.Checkbutton(self.main_menu_frame, text="Enable Attack Heuristic", variable=self.is_attack).pack()
         
         ttk.Button(self.main_menu_frame, text="Play", command=self.start_game).pack(pady=10)
         self.main_menu_frame.pack()
@@ -47,7 +52,16 @@ class TicTacToeGUI:
         self.status_label = ttk.Label(self.board_frame, text="Your Turn (X)")
         self.status_label.grid(row=3, column=0, columnspan=3, pady=10)
 
-        ttk.Button(self.board_frame, text="Main Menu", command=self.return_to_main_menu).grid(row=4, column=0, columnspan=3, pady=10)
+        ttk.Button(self.board_frame, text="Main Menu", command=self.return_to_main_menu).grid(row=4, column=0, columnspan=2, pady=10)
+        ttk.Button(self.board_frame, text="Play Again", command=self.play_again).grid(row=4, column=1, columnspan=2, pady=10)
+
+        if self.ai_first:
+            self.computer_move()
+
+    def play_again(self):
+        """Clears the board and lets the player play again"""
+        self.ai_first = not self.ai_first
+        self.reset_board()
 
     def return_to_main_menu(self):
         """Returns to the main menu"""
@@ -56,6 +70,7 @@ class TicTacToeGUI:
     
     def start_game(self):
         """Starts the game by locking in settings and displaying the Tic-Tac-Toe board"""
+        self.ai_first = False
         self.algorithm = self.selected_algorithm.get()
         self.depth = self.difficulty.get()
 
@@ -79,9 +94,9 @@ class TicTacToeGUI:
     def computer_move(self):
         """Makes AI move"""
         if self.algorithm == "Minimax":
-            _, ai_move = minimax(self.board, self.depth, True)
+            _, ai_move = minimax(self.board, self.depth, True, self.is_attack.get())
         else:
-            _, ai_move = minimax_alpha_beta(self.board, self.depth, float('-inf'), float('inf'), True)
+            _, ai_move = minimax_alpha_beta(self.board, self.depth, float('-inf'), float('inf'), True, self.is_attack.get())
             
         if ai_move:
             ai_row, ai_col = ai_move
